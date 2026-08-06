@@ -18,5 +18,6 @@ app.use(
   }),
 );
 app.use(cookieParser());
-
+import authRouter from "./modules/auth/auth.route.js";
+app.use("/api/v1/auth", authRouter);
 app.use(globalErrorHandler);

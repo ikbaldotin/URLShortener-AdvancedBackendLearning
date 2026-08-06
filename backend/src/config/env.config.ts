@@ -9,6 +9,11 @@ export const envSchema = z.object({
   PORT: z.coerce.number(),
   FRONTEND_URL: z.string(),
   DATABASE_URL: z.string(),
+  SALT_ROUNDS: z.coerce.number(),
+  ACCESS_TOKEN_SECRET: z.string(),
+  ACCESS_TOKEN_EXPIRES_IN: z.string(),
+  REFRESH_TOKEN_SECRET: z.string(),
+  REFRESH_TOKEN_EXPIRES_IN: z.string(),
 });
 const parsedEnv = envSchema.safeParse(process.env);
 if (!parsedEnv.success) {
