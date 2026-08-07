@@ -3,6 +3,10 @@ export type registerUserType = {
   email: string;
   passwordHash: string;
 };
+export type loginUserType = {
+  email: string;
+  password: string;
+};
 export type UserResponseType = {
   name: string;
   id: string;

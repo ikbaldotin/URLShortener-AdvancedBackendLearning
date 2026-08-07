@@ -2,6 +2,8 @@ import bcrypt from "bcrypt";
 import { env } from "../../config/env.config.js";
 import { JwtPayloadType } from "./auth.types.js";
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
+import { Response } from "express";
+import ms from "ms";
 export const hashPassword = async (password: string) => {
   return await bcrypt.hash(password, env.SALT_ROUNDS);
 };
@@ -27,4 +29,20 @@ export const verifyAccessToken = (token: string) => {
 };
 export const varifyRefreshToken = (token: string) => {
   return jwt.verify(token, env.REFRESH_TOKEN_SECRET) as JwtPayload;
+};
+export const setAuthCookies = (res: Response, refreshToken: string) => {
+  const refreshTokenAge = ms(env.REFRESH_TOKEN_EXPIRES_IN as ms.StringValue);
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: env.NODE_ENV === "prod",
+    sameSite: "lax", // only development
+    maxAge: refreshTokenAge,
+  });
+};
+export const clearAuthCookies = (res: Response) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: env.NODE_ENV === "prod",
+    sameSite: "lax", // only development
+  });
 };
