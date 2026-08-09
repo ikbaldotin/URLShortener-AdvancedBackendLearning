@@ -14,6 +14,9 @@ export const envSchema = z.object({
   ACCESS_TOKEN_EXPIRES_IN: z.string(),
   REFRESH_TOKEN_SECRET: z.string(),
   REFRESH_TOKEN_EXPIRES_IN: z.string(),
+  SHORT_CODE_LENGTH: z.coerce.number(),
+  REDIS_URL: z.url(),
+  REDIS_PORT: z.coerce.number(),
 });
 const parsedEnv = envSchema.safeParse(process.env);
 if (!parsedEnv.success) {
