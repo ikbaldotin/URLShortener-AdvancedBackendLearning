@@ -1,8 +1,11 @@
 import { z } from "zod";
-export const urlSchema = z
+export const createUrlSchema = z
   .object({
     originalUrl: z.url(),
   })
   .strict();
-
-export type UrlDTO = z.infer<typeof urlSchema>;
+export const updateUrlSchema = z.object({
+  updateOriginalUrl: z.url(),
+});
+export type UrlDTO = z.infer<typeof createUrlSchema>;
+export type updateUrlDTO = z.infer<typeof updateUrlSchema>;

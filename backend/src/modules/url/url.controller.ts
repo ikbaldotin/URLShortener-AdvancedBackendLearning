@@ -25,4 +25,19 @@ export class UrlController {
       res.redirect(originalUrl);
     },
   );
+  updateOriginalURl = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const shortCode = req.params.shortCode as string;
+      const userId = req.user?.userId as string;
+      const { updateOriginalUrl } = req.body;
+      const result = await urlService.updateOriginalUrl(userId, shortCode, {
+        updateOriginalUrl,
+      });
+      sendResponse(res, 200, {
+        success: true,
+        message: "Origianl url updated successfully",
+        data: result,
+      });
+    },
+  );
 }
