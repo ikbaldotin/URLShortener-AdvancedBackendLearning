@@ -22,7 +22,7 @@ export class UrlService {
         });
         await setCache(
           getShortUrlCacheKey(shortUrl.shortCode),
-          `${shortUrl.originalUrl}`,
+          JSON.stringify(shortUrl),
           300,
         );
         return shortUrl;
@@ -31,13 +31,15 @@ export class UrlService {
     throw new AppError("short url is already exists", 400);
   }
   async getOriginalUrlFromShortCode(shortCode: string) {
-    const cachedOriginalUrl = await getCache(`shortCode:${shortCode}`);
-    if (cachedOriginalUrl) {
+    const cachedShortUrl = await getCache(`shortCode:${shortCode}`);
+
+    if (cachedShortUrl) {
+      const parsedCachedShortUrl = JSON.parse(cachedShortUrl);
       logger.info({
         event: "CACHE_HIT",
         shortCode,
       });
-      return cachedOriginalUrl;
+      return parsedCachedShortUrl;
     }
     const shortUrl = await this.urlRepo.findByShortCode(shortCode);
 
@@ -46,10 +48,10 @@ export class UrlService {
     }
     await setCache(
       getShortUrlCacheKey(shortUrl.shortCode),
-      `${shortUrl.originalUrl}`,
+      JSON.stringify(shortUrl),
       300,
     );
-    return shortUrl.originalUrl;
+    return shortUrl;
   }
   async updateOriginalUrl(
     userId: string,
@@ -71,7 +73,11 @@ export class UrlService {
     if (!updateShortUrl) {
       throw new AppError("You not allowed perform this action", 401);
     }
-    await deleteCache(getShortUrlCacheKey(updateShortUrl.shortCode));
+    await setCache(
+      getShortUrlCacheKey(updateShortUrl.shortCode),
+      JSON.stringify(updateShortUrl),
+      300,
+    );
     return updateShortUrl;
   }
 }
