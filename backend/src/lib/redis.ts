@@ -1,11 +1,12 @@
 import { Redis } from "ioredis";
 import { env } from "../config/env.config.js";
 import { logger } from "../config/logger.js";
-const redis = new Redis({
+export const redisConnection = {
   host: env.REDIS_URL,
   port: Number(env.REDIS_PORT),
   maxRetriesPerRequest: null,
-});
+};
+const redis = new Redis(redisConnection);
 
 redis.on("connect", () => {
   logger.info("Redis connected successfully");
