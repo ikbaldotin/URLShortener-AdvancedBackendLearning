@@ -17,6 +17,15 @@ export const envSchema = z.object({
   SHORT_CODE_LENGTH: z.coerce.number(),
   REDIS_URL: z.string(),
   REDIS_PORT: z.coerce.number(),
+  GLOBAL_RATE_LIMIT_WINDOW: z.coerce.number(),
+  GLOBAL_RATE_LIMIT_SIZE: z.coerce.number(),
+  LOGIN_RATE_LIMIT_WINDOW: z.coerce.number(),
+  LOGIN_RATE_LIMIT_SIZE: z.coerce.number(),
+  SHORT_URL_RATE_LIMIT_WINDOW: z.coerce.number(),
+  SHORT_URL_RATE_LIMIT_SIZE: z.coerce.number(),
+  SHORT_URL_TOKEN_BUCKET_CAPACITY: z.coerce.number(),
+  SHORT_URL_TOKEN_BUCKET_REFILL_RATE: z.coerce.number(),
+  SHORT_URL_TOKEN_BUCKET_REFILL_INTERVAL: z.coerce.number(),
 });
 const parsedEnv = envSchema.safeParse(process.env);
 if (!parsedEnv.success) {

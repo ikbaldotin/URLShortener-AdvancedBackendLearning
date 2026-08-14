@@ -1,7 +1,7 @@
 import { z } from "zod";
 export const createUrlSchema = z
   .object({
-    originalUrl: z.url(),
+    originalUrl: z.string().trim().min(1, "Url is required").url("Invalid url"),
   })
   .strict();
 export const updateUrlSchema = z.object({

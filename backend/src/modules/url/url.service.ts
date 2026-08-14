@@ -1,7 +1,11 @@
 import { logger } from "../../config/logger.js";
 import { AppError } from "../../utils/common/Errors/App.Error.js";
 import { deleteCache, getCache, setCache } from "./cache/cache.service.js";
-import { createShortCode, getShortUrlCacheKey } from "./url.helper.js";
+import {
+  createShortCode,
+  getShortUrlCacheKey,
+  parseUrl,
+} from "./url.helper.js";
 import { IUrlRepository } from "./url.interface.js";
 import { updateUrlDTO, UrlDTO } from "./url.schema.js";
 
@@ -9,14 +13,14 @@ export class UrlService {
   constructor(private urlRepo: IUrlRepository) {}
   async createShortUrl(data: UrlDTO, userId: string) {
     const originalUrl = data.originalUrl;
-
+    const parseOriginalUrl = parseUrl(originalUrl);
     const MAX_RETIRES = 6;
     for (let i = 0; i < MAX_RETIRES; i++) {
       const shortCode = createShortCode();
       const exitingShortUrl = await this.urlRepo.findByShortCode(shortCode);
       if (!exitingShortUrl) {
         const shortUrl = await this.urlRepo.createShortUrl({
-          originalUrl,
+          originalUrl: parseOriginalUrl,
           userId,
           shortCode,
         });
