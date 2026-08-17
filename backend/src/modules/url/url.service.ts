@@ -63,17 +63,16 @@ export class UrlService {
     data: updateUrlDTO,
   ) {
     const shortUrl = await this.urlRepo.findByShortCode(shortCode);
+    const parsedUpdateUrl = parseUrl(data.updateOriginalUrl);
     if (!shortUrl) {
       throw new AppError("short url is not found", 404);
     }
     if (shortUrl?.userId !== userId) {
       throw new AppError("You not allowed perform this action", 401);
     }
-    const updateShortUrl = await this.urlRepo.updateShortUrl(
-      userId,
-      shortCode,
-      data,
-    );
+    const updateShortUrl = await this.urlRepo.updateShortUrl(shortCode, {
+      updateOriginalUrl: parsedUpdateUrl,
+    });
     if (!updateShortUrl) {
       throw new AppError("You not allowed perform this action", 401);
     }

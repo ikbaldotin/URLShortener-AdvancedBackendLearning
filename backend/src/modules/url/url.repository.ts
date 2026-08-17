@@ -1,35 +1,39 @@
 import { ShortURL } from "../../generated/prisma/index.js";
 import prisma from "../../lib/prisma.js";
+import { measureQuery } from "../../utils/common/helper/MeasureQuery.js";
 import { IUrlRepository } from "./url.interface.js";
 import { createShortUrl, updateShortUrlType } from "./url.types.js";
 
 export class UrlRepository implements IUrlRepository {
   async findByShortCode(shortCode: string): Promise<ShortURL | null> {
-    const shortUrl = await prisma.shortURL.findUnique({
-      where: { shortCode },
-    });
-    return shortUrl;
+    return measureQuery("findByShortCode", () =>
+      prisma.shortURL.findUnique({
+        where: {
+          shortCode,
+        },
+      }),
+    );
   }
   async createShortUrl(data: createShortUrl): Promise<ShortURL> {
-    const shortUrl = await prisma.shortURL.create({
-      data,
-    });
-    return shortUrl;
+    return measureQuery("createShortUrl", () =>
+      prisma.shortURL.create({
+        data,
+      }),
+    );
   }
   async updateShortUrl(
-    userId: string,
     shortCode: string,
     data: updateShortUrlType,
   ): Promise<ShortURL> {
-    const updateUrl = await prisma.shortURL.update({
-      where: {
-        shortCode,
-        userId,
-      },
-      data: {
-        originalUrl: data.updateOriginalUrl,
-      },
-    });
-    return updateUrl;
+    return measureQuery("updateShortUrl", () =>
+      prisma.shortURL.update({
+        where: {
+          shortCode,
+        },
+        data: {
+          originalUrl: data.updateOriginalUrl,
+        },
+      }),
+    );
   }
 }

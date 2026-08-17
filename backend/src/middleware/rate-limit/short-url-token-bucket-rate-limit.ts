@@ -40,16 +40,18 @@ export const shortUrlTokenBucketRateLimit = async (
         );
         bucket.lastRefill += refillCount * REFILL_INTERVAL;
       }
-      if (bucket.tokens <= 0) {
-        return res.status(429).json({
-          success: false,
-          message: "Too many request.Please try again later",
-        });
-      }
-      bucket.tokens--;
-      await redis.set(key, JSON.stringify(bucket), "EX", TTL);
-      next();
     }
+
+    if (bucket.tokens <= 0) {
+      return res.status(429).json({
+        success: false,
+        message: "Too many request.Please try again later",
+      });
+    }
+
+    bucket.tokens--;
+    await redis.set(key, JSON.stringify(bucket), "EX", TTL);
+    next();
   } catch (error) {
     next(error);
   }

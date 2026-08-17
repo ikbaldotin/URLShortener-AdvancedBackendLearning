@@ -5,6 +5,9 @@ import cookieParser from "cookie-parser";
 import { requestLogger } from "./middleware/request-logger.middleware.js";
 import { env } from "./config/env.config.js";
 import { globalErrorHandler } from "./middleware/error.middleware.js";
+import authRouter from "./modules/auth/auth.route.js";
+import urlRouter from "./modules/url/url.route.js";
+import { globalRateLimiter } from "./middleware/rate-limit/global-rate-limit.middleware.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -21,9 +24,6 @@ app.use(
 );
 app.use(cookieParser());
 app.use(globalRateLimiter);
-import authRouter from "./modules/auth/auth.route.js";
-import urlRouter from "./modules/url/url.route.js";
-import { globalRateLimiter } from "./middleware/rate-limit/global-rate-limit.middleware.js";
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/urls", urlRouter);
 app.get("/", (req: Request, res: Response) => {

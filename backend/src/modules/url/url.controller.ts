@@ -8,6 +8,7 @@ import { analyticsQueue } from "../../queues/analyticsQueue.js";
 export class UrlController {
   createUrl = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
+      console.log("CREATE SHORT URL CONTROLLER START");
       const { originalUrl } = req.body;
       const userId = req.user?.userId as string;
 

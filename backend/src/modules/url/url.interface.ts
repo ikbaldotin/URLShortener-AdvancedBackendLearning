@@ -5,7 +5,6 @@ export interface IUrlRepository {
   findByShortCode(shortCode: string): Promise<ShortURL | null>;
   createShortUrl(data: createShortUrl): Promise<ShortURL>;
   updateShortUrl(
-    userId: string,
     shortCode: string,
     data: updateShortUrlType,
   ): Promise<ShortURL>;

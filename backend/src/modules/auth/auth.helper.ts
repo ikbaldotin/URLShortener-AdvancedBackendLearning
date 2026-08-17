@@ -4,14 +4,21 @@ import { JwtPayloadType } from "./auth.types.js";
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 import { Response } from "express";
 import ms from "ms";
+import { performance } from "node:perf_hooks";
+import { logger } from "../../config/logger.js";
+import { measureOperation } from "../../utils/common/helper/MeasureOperations.js";
 export const hashPassword = async (password: string) => {
-  return await bcrypt.hash(password, env.SALT_ROUNDS);
+  return measureOperation("bcrypt.hash", () =>
+    bcrypt.hash(password, env.SALT_ROUNDS),
+  );
 };
 export const comparePassword = async (
-  passsword: string,
+  password: string,
   hashedPassword: string,
 ) => {
-  return await bcrypt.compare(passsword, hashedPassword);
+  return measureOperation("bcrypt.compare", () =>
+    bcrypt.compare(password, hashedPassword),
+  );
 };
 
 export const signAccessToken = (payload: JwtPayloadType) => {
