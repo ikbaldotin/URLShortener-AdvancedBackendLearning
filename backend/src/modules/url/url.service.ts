@@ -1,6 +1,6 @@
 import { logger } from "../../config/logger.js";
 import { AppError } from "../../utils/common/Errors/App.Error.js";
-import { deleteCache, getCache, setCache } from "./cache/cache.service.js";
+import { getCache, setCache } from "./cache/cache.service.js";
 import {
   createShortCode,
   getShortUrlCacheKey,
@@ -84,7 +84,11 @@ export class UrlService {
     }
     await setCache(
       getShortUrlCacheKey(updateShortUrl.shortCode),
-      JSON.stringify(updateShortUrl),
+
+      JSON.stringify({
+        shortUrlId: updateShortUrl.id,
+        originalUrl: updateShortUrl.originalUrl,
+      }),
       300,
     );
     return updateShortUrl;

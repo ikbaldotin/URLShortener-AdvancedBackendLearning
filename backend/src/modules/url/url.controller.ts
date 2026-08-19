@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/common/helper/CatchAsync.js";
 import urlService from "./url.container.js";
 import { sendResponse } from "../../utils/response/AppResponse.js";
-import analyticsService from "../analytics/analytics.container.js";
+
 import { analyticsQueue } from "../../queues/analyticsQueue.js";
 
 export class UrlController {

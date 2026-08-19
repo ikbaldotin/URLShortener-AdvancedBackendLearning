@@ -16,4 +16,5 @@ export type RecordClickInputType = {
   ipAddress?: string;
   userAgent?: string;
   referrer?: string;
+  country?: string;
 };
