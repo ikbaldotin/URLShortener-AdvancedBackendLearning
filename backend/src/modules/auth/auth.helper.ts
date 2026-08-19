@@ -4,8 +4,7 @@ import { JwtPayloadType } from "./auth.types.js";
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 import { Response } from "express";
 import ms from "ms";
-import { performance } from "node:perf_hooks";
-import { logger } from "../../config/logger.js";
+
 import { measureOperation } from "../../utils/common/helper/MeasureOperations.js";
 export const hashPassword = async (password: string) => {
   return measureOperation("bcrypt.hash", () =>

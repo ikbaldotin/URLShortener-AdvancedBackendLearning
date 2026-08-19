@@ -28,7 +28,7 @@ export class UrlController {
       await analyticsQueue.add(
         "record-analytics",
         {
-          shortUrlId: shortUrl.id,
+          shortUrlId: shortUrl.shortUrlId,
           ipAddress: req.ip,
           userAgent: req.headers["user-agent"],
           referrer: req.get("Referer"),

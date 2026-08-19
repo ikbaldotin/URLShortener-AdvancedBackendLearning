@@ -14,7 +14,15 @@ export const setCache = async (
   });
 };
 export const getCache = async (key: string) => {
-  return await redis.get(key);
+  const result = await redis.multi().get(key).expire(key, 600).exec();
+  if (!result) {
+    return null;
+  }
+  const [[getError], [value]] = result;
+  if (getError) {
+    throw getError;
+  }
+  return value as string | null;
 };
 export const deleteCache = async (key: string) => {
   await redis.del(key);
