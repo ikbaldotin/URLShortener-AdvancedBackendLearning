@@ -1,5 +1,6 @@
 import { logger } from "../../config/logger.js";
 import { AppError } from "../../utils/common/Errors/App.Error.js";
+import bloomService from "../bloom/bloom.container.js";
 import { getCache, setCache } from "./cache/cache.service.js";
 import {
   createShortCode,
@@ -18,23 +19,44 @@ export class UrlService {
     for (let i = 0; i < MAX_RETIRES; i++) {
       const shortCode = createShortCode();
       const exitingShortUrl = await this.urlRepo.findByShortCode(shortCode);
-      if (!exitingShortUrl) {
-        const shortUrl = await this.urlRepo.createShortUrl({
-          originalUrl: parseOriginalUrl,
-          userId,
+      if (exitingShortUrl) {
+        continue;
+      }
+      const shortUrl = await this.urlRepo.createShortUrl({
+        originalUrl: parseOriginalUrl,
+        userId,
+        shortCode,
+      });
+      try {
+        await bloomService.add(shortCode);
+        logger.info({
+          event: "BLO0M_FILTER_UPDATED",
           shortCode,
         });
-        await setCache(
-          getShortUrlCacheKey(shortUrl.shortCode),
-          JSON.stringify(shortUrl),
-          300,
-        );
-        return shortUrl;
+      } catch (error) {
+        logger.warn({
+          event: "BLOOM_FILTER_UPDATE_FAILED",
+          shortCode,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
       }
+      return shortUrl;
     }
     throw new AppError("short url is already exists", 400);
   }
   async getOriginalUrlFromShortCode(shortCode: string) {
+    const mightExist = await bloomService.mightExist(shortCode);
+    if (!mightExist) {
+      logger.info({
+        event: "BLOOM_FILTER_NEGATIVE",
+        shortCode,
+      });
+      throw new AppError("Short url not found", 404);
+    }
+    logger.info({
+      event: "BLOOM_FILTER_POSITIVE",
+      shortCode,
+    });
     const cachedShortUrl = await getCache(`shortCode:${shortCode}`);
 
     if (cachedShortUrl) {
@@ -50,18 +72,18 @@ export class UrlService {
     if (!shortUrl) {
       throw new AppError("short url is not found", 404);
     }
-    await setCache(
-      getShortUrlCacheKey(shortUrl.shortCode),
-      JSON.stringify({
-        shortUrlId: shortUrl.id,
-        originalUrl: shortUrl.originalUrl,
-      }),
-      300,
-    );
-    return {
+    const response = {
       shortUrlId: shortUrl.id,
       originalUrl: shortUrl.originalUrl,
     };
+    await setCache(
+      getShortUrlCacheKey(shortUrl.shortCode),
+      JSON.stringify({
+        response,
+      }),
+      300,
+    );
+    return response;
   }
   async updateOriginalUrl(
     userId: string,
