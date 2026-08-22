@@ -1,6 +1,7 @@
 import { logger } from "../../config/logger.js";
 import { AppError } from "../../utils/common/Errors/App.Error.js";
 import bloomService from "../bloom/bloom.container.js";
+import { LockService } from "../lock/lock.service.js";
 import { getCache, setCache } from "./cache/cache.service.js";
 import {
   createShortCode,
@@ -11,7 +12,10 @@ import { IUrlRepository } from "./url.interface.js";
 import { updateUrlDTO, UrlDTO } from "./url.schema.js";
 
 export class UrlService {
-  constructor(private urlRepo: IUrlRepository) {}
+  constructor(
+    private urlRepo: IUrlRepository,
+    private lockRep: LockService,
+  ) {}
   async createShortUrl(data: UrlDTO, userId: string) {
     const originalUrl = data.originalUrl;
     const parseOriginalUrl = parseUrl(originalUrl);
@@ -57,7 +61,7 @@ export class UrlService {
       event: "BLOOM_FILTER_POSITIVE",
       shortCode,
     });
-    const cachedShortUrl = await getCache(`shortCode:${shortCode}`);
+    const cachedShortUrl = await getCache(getShortUrlCacheKey(shortCode));
 
     if (cachedShortUrl) {
       const parsedCachedShortUrl = JSON.parse(cachedShortUrl);
@@ -67,23 +71,55 @@ export class UrlService {
       });
       return parsedCachedShortUrl;
     }
-    const shortUrl = await this.urlRepo.findByShortCode(shortCode);
-
-    if (!shortUrl) {
-      throw new AppError("short url is not found", 404);
+    logger.info({
+      event: "CACHE_MISS",
+      shortCode,
+    });
+    const lock = await this.lockRep.aquireLock(shortCode);
+    if (!lock.acquired) {
+      logger.info({
+        event: "CACHE_REBUILD_IN_PROGRESS",
+        shortCode,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const cacheAgain = await getCache(getShortUrlCacheKey(shortCode));
+      if (cacheAgain) {
+        const parsedCachedAgain = JSON.parse(cacheAgain);
+        logger.info({
+          event: "CACHE_HIT_AFTER_WAIT",
+          shortCode,
+        });
+        return parsedCachedAgain;
+      }
+      logger.warn({
+        event: "CACHE_REBUILD_TIMEOUT",
+        shortCode,
+      });
+      throw new AppError("Please retry shortly", 503);
     }
-    const response = {
-      shortUrlId: shortUrl.id,
-      originalUrl: shortUrl.originalUrl,
-    };
-    await setCache(
-      getShortUrlCacheKey(shortUrl.shortCode),
-      JSON.stringify({
-        response,
-      }),
-      300,
-    );
-    return response;
+    try {
+      const shortUrl = await this.urlRepo.findByShortCode(shortCode);
+
+      if (!shortUrl) {
+        throw new AppError("short url is not found", 404);
+      }
+      const response = {
+        shortUrlId: shortUrl.id,
+        originalUrl: shortUrl.originalUrl,
+      };
+      await setCache(
+        getShortUrlCacheKey(shortUrl.shortCode),
+        JSON.stringify({
+          response,
+        }),
+        300,
+      );
+      return response;
+    } finally {
+      if (lock.lockId) {
+        await this.lockRep.releaseLock(shortCode, lock.lockId);
+      }
+    }
   }
   async updateOriginalUrl(
     userId: string,
