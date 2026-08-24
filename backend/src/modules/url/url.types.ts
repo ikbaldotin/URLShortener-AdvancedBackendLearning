@@ -15,3 +15,7 @@ export type shortUrlType = {
   createdAt: Date;
   updatedAt: Date;
 };
+export type UrlCursor = {
+  createdAt: Date;
+  id: string;
+};

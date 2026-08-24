@@ -23,4 +23,8 @@ router
     authMiddleware,
     urlController.updateOriginalURl,
   );
+router.route("/").get(authMiddleware, urlController.getUserUrls);
+router
+  .route("/:id/analytics")
+  .get(authMiddleware, urlController.getUrlAnalytics);
 export default router;

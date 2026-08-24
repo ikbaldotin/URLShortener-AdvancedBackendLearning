@@ -2,7 +2,7 @@ import { ShortURL } from "../../generated/prisma/index.js";
 import prisma from "../../lib/prisma.js";
 import { measureQuery } from "../../utils/common/helper/MeasureQuery.js";
 import { IUrlRepository } from "./url.interface.js";
-import { createShortUrl, updateShortUrlType } from "./url.types.js";
+import { createShortUrl, updateShortUrlType, UrlCursor } from "./url.types.js";
 
 export class UrlRepository implements IUrlRepository {
   async findByShortCode(shortCode: string): Promise<ShortURL | null> {
@@ -36,11 +36,61 @@ export class UrlRepository implements IUrlRepository {
       }),
     );
   }
+  async findShortUrlsByUserId(
+    userId: string,
+    limit: number = 10,
+    cursor?: UrlCursor,
+  ): Promise<ShortURL[] | null> {
+    return measureQuery("findShortUrlsByUserId", () =>
+      prisma.shortURL.findMany({
+        where: {
+          userId,
+          ...(cursor && {
+            OR: [
+              {
+                createdAt: {
+                  lt: cursor.createdAt,
+                },
+              },
+              {
+                createdAt: cursor.createdAt,
+                id: {
+                  lt: cursor.id,
+                },
+              },
+            ],
+          }),
+        },
+        orderBy: [
+          {
+            createdAt: "desc",
+          },
+          {
+            id: "desc",
+          },
+        ],
+        take: limit + 1,
+      }),
+    );
+  }
   async findTopUrl(limit: number): Promise<ShortURL[]> {
     return measureQuery("findTopUrl", () =>
       prisma.shortURL.findMany({
         orderBy: { clickCount: "desc" },
         take: limit,
+      }),
+    );
+  }
+  async findShortUrlByIdandUserId(
+    id: string,
+    userId: string,
+  ): Promise<ShortURL | null> {
+    return measureQuery("findShortUrlByIdandUserId", () =>
+      prisma.shortURL.findFirst({
+        where: {
+          id,
+          userId,
+        },
       }),
     );
   }

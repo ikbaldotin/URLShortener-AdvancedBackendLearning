@@ -4,6 +4,7 @@ import urlService from "./url.container.js";
 import { sendResponse } from "../../utils/response/AppResponse.js";
 
 import { analyticsQueue } from "../../queues/analyticsQueue.js";
+import analyticsService from "../analytics/analytics.container.js";
 
 export class UrlController {
   createUrl = catchAsync(
@@ -16,6 +17,38 @@ export class UrlController {
       sendResponse(res, 200, {
         success: true,
         message: "Short code created successfully",
+        data: result,
+      });
+    },
+  );
+  getUserUrls = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const userId = req.user?.userId as string;
+      const limit = req.query.limit ? Number(req.query.limit) : 10;
+      const cursor = (req.query.cursor as string) || undefined;
+      const result = await urlService.getUserUrls(userId, limit, cursor);
+      sendResponse(res, 200, {
+        success: true,
+        message: "Urls fetched successfully",
+        data: result,
+      });
+    },
+  );
+  getUrlAnalytics = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const userId = req.user?.userId as string;
+      const shortUrlId = req.params.shortUrlId as string;
+      const limit = req.query.limit ? Number(req.query.limit) : 2;
+      const cursor = req.query.cursor as string | undefined;
+      const result = await analyticsService.getAnalytics(
+        userId,
+        shortUrlId,
+        limit,
+        cursor,
+      );
+      sendResponse(res, 200, {
+        success: true,
+        message: "Url Analytics fetched successfully",
         data: result,
       });
     },

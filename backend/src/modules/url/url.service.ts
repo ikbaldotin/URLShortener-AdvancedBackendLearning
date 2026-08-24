@@ -5,11 +5,14 @@ import { LockService } from "../lock/lock.service.js";
 import { getCache, setCache } from "./cache/cache.service.js";
 import {
   createShortCode,
+  decodedCursor,
+  encodeCursor,
   getShortUrlCacheKey,
   parseUrl,
 } from "./url.helper.js";
 import { IUrlRepository } from "./url.interface.js";
 import { updateUrlDTO, UrlDTO } from "./url.schema.js";
+import { UrlCursor } from "./url.types.js";
 
 export class UrlService {
   constructor(
@@ -120,6 +123,32 @@ export class UrlService {
         await this.lockRep.releaseLock(shortCode, lock.lockId);
       }
     }
+  }
+  async getUserUrls(userId: string, limit: number, cursor?: string) {
+    const safeLimit = Math.min(Math.max(limit, 1), 100);
+    const decodeCursor = cursor ? decodedCursor(cursor) : undefined;
+    console.log({ decodeCursor });
+    const urls = await this.urlRepo.findShortUrlsByUserId(
+      userId,
+      safeLimit,
+      decodeCursor,
+    );
+    if (!urls) {
+      throw new AppError("Urls is not found", 404);
+    }
+    const hasMore = urls.length > safeLimit;
+    const items = hasMore ? urls.slice(0, safeLimit) : urls;
+    const nextCursor = hasMore
+      ? encodeCursor({
+          createdAt: items[items.length - 1].createdAt,
+          id: items[items.length - 1].id,
+        })
+      : null;
+    return {
+      items,
+      nextCursor,
+      hasMore,
+    };
   }
   async updateOriginalUrl(
     userId: string,

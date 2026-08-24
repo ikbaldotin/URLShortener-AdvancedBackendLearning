@@ -3,6 +3,7 @@ import prisma from "../../lib/prisma.js";
 import { measureQuery } from "../../utils/common/helper/MeasureQuery.js";
 import { IAnalyticsRepository } from "./analytics.interface.js";
 import {
+  AnalyticsCursorType,
   createAnalyticsType,
   RecordClickInputType,
 } from "./analytics.types.js";
@@ -12,6 +13,43 @@ export class AnalyticsRepository implements IAnalyticsRepository {
     return measureQuery("createAnalytics", () =>
       prisma.clickAnalytics.create({
         data,
+      }),
+    );
+  }
+  async findAnalyticsByShortUrlId(
+    shortUrlId: string,
+    limit: number,
+    cursor?: AnalyticsCursorType,
+  ): Promise<ClickAnalytics[]> {
+    return measureQuery("findAnalyticsByShortUrlId", () =>
+      prisma.clickAnalytics.findMany({
+        where: {
+          shortUrlId,
+          ...(cursor && {
+            OR: [
+              {
+                clickedAt: {
+                  lt: cursor.clickedAt,
+                },
+              },
+              {
+                clickedAt: cursor.clickedAt,
+                id: {
+                  lt: cursor.id,
+                },
+              },
+            ],
+          }),
+        },
+        orderBy: [
+          {
+            clickedAt: "desc",
+          },
+          {
+            id: "desc",
+          },
+        ],
+        take: limit + 1,
       }),
     );
   }
