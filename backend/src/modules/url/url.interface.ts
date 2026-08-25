@@ -18,4 +18,5 @@ export interface IUrlRepository {
     data: updateShortUrlType,
   ): Promise<ShortURL>;
   findTopUrl(limit: number): Promise<ShortURL[]>;
+  simulateLongQuery(): Promise<unknown>;
 }

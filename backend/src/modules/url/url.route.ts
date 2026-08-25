@@ -15,6 +15,7 @@ router
     validate(createUrlSchema),
     urlController.createUrl,
   );
+router.route("/simulateLongQuery").get(urlController.simulateLongQuery);
 router.route("/:shortCode").get(urlController.redirectToOriginalURL);
 router
   .route("/:shortCode")

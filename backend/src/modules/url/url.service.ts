@@ -180,4 +180,7 @@ export class UrlService {
     );
     return updateShortUrl;
   }
+  async simulateLongQuery() {
+    return this.urlRepo.simulateLongQuery();
+  }
 }
