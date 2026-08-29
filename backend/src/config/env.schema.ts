@@ -1,0 +1,32 @@
+import { z } from "zod";
+
+export const envSchema = z.object({
+  NODE_ENV: z.string(),
+  PORT: z.coerce.number(),
+  FRONTEND_URL: z.string(),
+  DATABASE_URL: z.string(),
+  SALT_ROUNDS: z.coerce.number(),
+  ACCESS_TOKEN_SECRET: z.string(),
+  ACCESS_TOKEN_EXPIRES_IN: z.string(),
+  REFRESH_TOKEN_SECRET: z.string(),
+  REFRESH_TOKEN_EXPIRES_IN: z.string(),
+  SHORT_CODE_LENGTH: z.coerce.number(),
+  REDIS_URL: z.string(),
+  REDIS_PORT: z.coerce.number(),
+  GLOBAL_RATE_LIMIT_WINDOW: z.coerce.number(),
+  GLOBAL_RATE_LIMIT_SIZE: z.coerce.number(),
+  LOGIN_RATE_LIMIT_WINDOW: z.coerce.number(),
+  LOGIN_RATE_LIMIT_SIZE: z.coerce.number(),
+  SHORT_URL_RATE_LIMIT_WINDOW: z.coerce.number(),
+  SHORT_URL_RATE_LIMIT_SIZE: z.coerce.number(),
+  SHORT_URL_TOKEN_BUCKET_CAPACITY: z.coerce.number(),
+  SHORT_URL_TOKEN_BUCKET_REFILL_RATE: z.coerce.number(),
+  SHORT_URL_TOKEN_BUCKET_REFILL_INTERVAL: z.coerce.number(),
+  HOT_URL_CACHE_TTL: z.coerce.number(),
+  CACHE_WARMER_TIME: z.coerce.number(),
+  WARM_HOT_URLS_LIMIT: z.coerce.number(),
+  LOCK_TTL_SECONDS: z.coerce.number(),
+  JITTER_PERCENT: z.coerce.number(),
+  URL_CACHE_TTL: z.coerce.number(),
+});
+export type Env = z.infer<typeof envSchema>;

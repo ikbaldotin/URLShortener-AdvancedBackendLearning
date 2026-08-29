@@ -1,4 +1,4 @@
-import { User } from "../../generated/prisma/index.js";
+import { User } from "../../../generated/prisma/index.js";
 import { registerUserType } from "./auth.types.js";
 
 export interface IAuthRepository {

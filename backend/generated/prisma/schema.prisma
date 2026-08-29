@@ -3,7 +3,7 @@ generator client {
   output   = "../generated/prisma"
 }
 
-datasource db {f
+datasource db {
   provider = "postgresql"
 }
 
@@ -27,7 +27,8 @@ model ShortURL {
   clickCount  Int              @default(0)
   analytics   ClickAnalytics[]
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-@@index([userId,createdAt(sort: Desc),id(sort: Desc)])
+
+  @@index([userId, createdAt(sort: Desc), id(sort: Desc)])
   @@map("short_urls")
 }
 
@@ -41,7 +42,6 @@ model ClickAnalytics {
   country    String?
   shortUrl   ShortURL @relation(fields: [shortUrlId], references: [id], onDelete: Cascade)
 
- 
-  @@index([shortUrlId,clickedAt])
+  @@index([shortUrlId, clickedAt])
   @@map("click_analytics")
 }

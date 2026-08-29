@@ -1,0 +1,40 @@
+#Dependencies
+node_modules
+#Build Output
+dist
+
+#Git
+.git
+.gitignore
+
+#Environment files
+.env
+.env.*  
+!.env.sample
+
+#IDE/EDITOR
+.vscode
+.idea
+
+#Logs
+*.logs
+yarn-debug.log*
+yarn-error.log*
+
+#Text Coverage
+coverage
+
+#Temporary files
+tmp
+temp
+
+#OS Files
+.DS_Store
+Thumbs.db
+
+#Documentation
+README.md
+
+#Docker Compose Files
+docker-composee.yml
+docker-compose.override.yml

@@ -1,4 +1,4 @@
-import { ShortURL } from "../../generated/prisma/index.js";
+import { ShortURL } from "../../../generated/prisma/index.js";
 import prisma from "../../lib/prisma.js";
 import { measureQuery } from "../../utils/common/helper/MeasureQuery.js";
 import { IUrlRepository } from "./url.interface.js";
