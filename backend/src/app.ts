@@ -8,6 +8,7 @@ import { globalErrorHandler } from "./middleware/error.middleware.js";
 import authRouter from "./modules/auth/auth.route.js";
 import urlRouter from "./modules/url/url.route.js";
 import { globalRateLimiter } from "./middleware/rate-limit/global-rate-limit.middleware.js";
+import { HealthController } from "./modules/health-check/health.controller.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -23,6 +24,10 @@ app.use(
   }),
 );
 app.use(cookieParser());
+const healthController = new HealthController();
+app.use("/live", healthController.live);
+app.use("/ready", healthController.ready);
+app.use("/health", healthController.health);
 app.use(globalRateLimiter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/urls", urlRouter);
