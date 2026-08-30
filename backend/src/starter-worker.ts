@@ -3,8 +3,13 @@ import "./workers/analyticsWorker.js";
 import "./workers/cacheWarmWorker.js";
 import { logger } from "./config/logger.js";
 import { cacheWarmerQueue } from "./queues/cacheWarmerQueue.js";
+import { analyticsWorker } from "./workers/analyticsWorker.js";
+import { cacheWarmerWorker } from "./workers/cacheWarmWorker.js";
 import { env } from "./config/env.config.js";
-logger.info("Workers started");
+
+logger.info({
+  event: "WORKER_PROCESS_STARTED ",
+});
 await cacheWarmerQueue.upsertJobScheduler(
   "cache-warmer",
   {
@@ -15,5 +20,73 @@ await cacheWarmerQueue.upsertJobScheduler(
   },
 );
 logger.info({
-  event: "CACHE_WARMER_SCHEDULER_STARTED",
+  event: "CACHE_WARMER_SCHEDULAR_STARTED",
 });
+//worker life cycle events
+analyticsWorker.on("ready", () => {
+  logger.info({
+    event: "ANALYTICS_WORKER_READY",
+  });
+});
+analyticsWorker.on("error", (error) => {
+  logger.error({
+    event: "ANALYTICS_WORKER_ERROR",
+    error,
+  });
+});
+analyticsWorker.on("closed", () => {
+  logger.info({
+    event: "ANALYTICS_WORKER_CLOSED",
+  });
+});
+analyticsWorker.on("failed", (job, error) => {
+  logger.info({
+    event: "ANALYTICS_JOB_FAIL",
+    jobId: job?.id,
+    error,
+  });
+});
+cacheWarmerWorker.on("ready", () => {
+  logger.info({
+    event: "CACHE_WARMER_JOB_READY",
+  });
+});
+cacheWarmerWorker.on("error", (error) => {
+  logger.error({
+    event: "CACHE_WARMER_WORKER_ERROR",
+    error,
+  });
+});
+cacheWarmerWorker.on("closed", () => {
+  logger.info({
+    event: "CACHE_WARMER_WORKER_CLOSED",
+  });
+});
+cacheWarmerWorker.on("failed", (job, error) => {
+  logger.info({
+    event: "CACHE_WARMER_JOB_FAILED",
+    jobId: job?.id,
+    error,
+  });
+});
+async function shutdown(signal: string) {
+  logger.info({
+    event: "WORKER_SHUTDOWN_STARTED",
+    signal,
+  });
+  await Promise.all([analyticsWorker.close(), cacheWarmerWorker.close()]);
+  logger.info({
+    event: "WORKER_SHUTDOWN_COMPELETED",
+  });
+  process.exit(0);
+}
+process.on("SIGINT", () => {
+  void shutdown("SIGINT");
+});
+process.on("SIGTERM", () => {
+  void shutdown("SIGTERM");
+});
+// await cacheWarmerQueue.getJobSchedulers();
+// logger.info({
+//   event: "CACHE_WARMER_SCHEDULER_STARTED",
+// });

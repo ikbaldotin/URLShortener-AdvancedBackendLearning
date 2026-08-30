@@ -1,15 +1,98 @@
+# version: "3.9"
+
+# services:
+#   pgbouncer:
+#     image: edoburu/pgbouncer:latest
+#     container_name: pgbouncer
+
+#     ports:
+#       - "6432:5432"
+
+#     volumes:
+#       - ./docker/pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+#       - ./docker/pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
+
+#     restart: unless-stopped
+#   redis-stack:
+#   image: redis/redis-stack-server:latest
+#   container_name: redis-stack
+#   ports:
+#     - "6379:6379"
+
+#   restart: unless-stopped
+#   url-shortener-worker:
+#     image: url-shortener-worker:v1
+#     build:
+#       context: url-shortener-worker
+#       dockerfile: ./Dockerfile.worker
+#   url-shortener-api:
+#     image: url-shortener-backend:v1
+#     build:
+#       context: url-shortener-worker
+#       dockerfile: ./Dockerfile
 version: "3.9"
 
 services:
+  redis-stack:
+    image: redis/redis-stack:latest
+    container_name: redis-stack
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - url-shortener-network
+
   pgbouncer:
     image: edoburu/pgbouncer:latest
     container_name: pgbouncer
-
     ports:
       - "6432:5432"
-
     volumes:
       - ./docker/pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
       - ./docker/pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
-
     restart: unless-stopped
+    networks:
+      - url-shortener-network
+
+  backend:
+    image: url-shortener-backend:v1
+    container_name: url-shortener-api
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - pgbouncer
+      - redis-stack
+    networks:
+      - url-shortener-network
+    restart: unless-stopped
+
+  worker:
+    image: url-shortener-worker:v1
+    container_name: url-shortener-worker
+    build:
+      context: .
+      dockerfile: ./Dockerfile.worker
+    env_file:
+      - .env
+    depends_on:
+      - redis-stack
+      - pgbouncer
+      - backend
+    networks:
+      - url-shortener-network
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+
+networks:
+  url-shortener-network:
+    driver: bridge

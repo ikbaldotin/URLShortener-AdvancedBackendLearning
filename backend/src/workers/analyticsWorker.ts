@@ -4,7 +4,7 @@ import { deadLetterQueue } from "../queues/deadLetterQueue.js";
 import { redisConnection } from "../lib/redis.js";
 import analyticsService from "../modules/analytics/analytics.container.js";
 import { RecordAnalyticsJob } from "./worker.types.js";
-new Worker<RecordAnalyticsJob>(
+export const analyticsWorker = new Worker<RecordAnalyticsJob>(
   "analyticsQueue",
   async (job) => {
     try {
