@@ -86,7 +86,3 @@ process.on("SIGINT", () => {
 process.on("SIGTERM", () => {
   void shutdown("SIGTERM");
 });
-// await cacheWarmerQueue.getJobSchedulers();
-// logger.info({
-//   event: "CACHE_WARMER_SCHEDULER_STARTED",
-// });

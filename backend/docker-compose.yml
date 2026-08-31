@@ -76,7 +76,7 @@ services:
 
   worker:
     image: url-shortener-worker:v1
-    container_name: url-shortener-worker
+
     build:
       context: .
       dockerfile: ./Dockerfile.worker
