@@ -9,6 +9,7 @@ import authRouter from "./modules/auth/auth.route.js";
 import urlRouter from "./modules/url/url.route.js";
 import { globalRateLimiter } from "./middleware/rate-limit/global-rate-limit.middleware.js";
 import { HealthController } from "./modules/health-check/health.controller.js";
+import { backendInstanceMiddleware } from "./middleware/backend-instance.middleware.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -16,6 +17,7 @@ app.disable("x-powered-by");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
+app.use(backendInstanceMiddleware);
 app.use(requestLogger);
 app.use(
   cors({
